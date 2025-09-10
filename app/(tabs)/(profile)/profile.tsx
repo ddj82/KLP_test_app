@@ -5,6 +5,7 @@ import CustomButton from "@/components/CustomButton";
 import {useEffect, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {User} from "@/types/profile";
+import {confirmAlert} from "@/components/confirmAlert";
 
 export default function ProfileScreen() {
     const { handleLogout } = useAuthStore();
@@ -33,8 +34,14 @@ export default function ProfileScreen() {
         try {
             setSubmitting(true);
             await new Promise((r) => setTimeout(r, 500));
-            await handleLogout();
-            router.replace('/');
+
+            const confirmed = await confirmAlert("로그아웃", "로그아웃 하시겠습니까?");
+
+            if (confirmed) {
+                await handleLogout();
+                router.replace("/login");
+            }
+
         } catch (error) {
             console.error('로그아웃 실패:', error);
         }finally {

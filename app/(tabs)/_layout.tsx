@@ -1,22 +1,13 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {Tabs} from 'expo-router';
-
-import Colors from '@/constants/Colors';
-import {useColorScheme} from '@/components/useColorScheme';
-import {useClientOnlyValue} from '@/components/useClientOnlyValue';
 import {useAuthStore} from "@/stores/authStore";
 
 export default function TabLayout() {
-    const colorScheme = useColorScheme();
     const {isLoggedIn} = useAuthStore();
 
     return (
-        <Tabs
-            screenOptions={{
-                tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-                headerShown: useClientOnlyValue(false, true),
-            }}>
+        <Tabs>
             <Tabs.Screen
                 name="index"
                 options={{
