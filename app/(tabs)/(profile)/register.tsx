@@ -3,6 +3,7 @@ import {router} from "expo-router";
 import {useMemo, useState} from "react";
 import CustomButton from "@/components/CustomButton";
 import {signUp} from "@/lib/authApi";
+import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 
 const USERID_MIN = 4;
 const USERID_MAX = 40;
@@ -85,10 +86,11 @@ export default function RegisterScreen() {
                 password,
                 name: name.trim()
             });
-            Alert.alert("회원가입 완료", "로그인 화면으로 이동합니다.");
-            router.replace('/login');
+            Alert.alert("회원가입 완료", "로그인 화면으로 이동합니다.", [
+                { text: '확인', onPress: () => router.replace("/login") }
+            ]);
         } catch (e: any) {
-            console.log("error", e);
+            console.error("error", e);
             Alert.alert("회원가입 실패", e?.response?.data?.message ?? String(e));
         } finally {
             setSubmitting(false);
@@ -96,45 +98,58 @@ export default function RegisterScreen() {
     };
 
     return (
-        <View className="flex-1 bg-white justify-center p-5">
-            <Text className="text-xl font-bold mb-5 text-center">회원가입</Text>
-            <TextInput
-                className="border border-gray-300 p-2.5 rounded"
-                placeholder="아이디 (4~40자)"
-                value={userId}
-                onChangeText={onChangeUserId}
-                autoCapitalize="none"
-                autoCorrect={false}
-            />
-            {errors.userId ? <Text className="text-red-500 mb-2">{errors.userId}</Text> : null}
-
-            <TextInput
-                className="border border-gray-300 mt-2.5 p-2.5 rounded"
-                placeholder="비밀번호 (4자 이상)"
-                secureTextEntry
-                value={password}
-                onChangeText={onChangePassword}
-            />
-            {errors.password ? <Text className="text-red-500 mb-2">{errors.password}</Text> : null}
-
-            <TextInput
-                className="border border-gray-300 mt-2.5 p-2.5 rounded"
-                placeholder="이름"
-                value={name}
-                onChangeText={onChangeName}
-            />
-            {errors.name ? <Text className="text-red-500">{errors.name}</Text> : null}
-
-            <View className="mt-2.5">
-                <CustomButton
-                    title={submitting ? "" : "회원가입"}
-                    onPress={handleSignUpBtn}
-                    addClass={"p-4"}
-                    bgColor={isFormValid && !submitting ? "bg-blue-500" : "bg-gray-300"}
-                    disabled={!isFormValid || submitting}
-                    RightIcon={submitting ? <ActivityIndicator /> : null}
+        <View className="flex-1 bg-white">
+            <KeyboardAwareScrollView
+                className="p-5"
+                contentContainerStyle={{
+                    flex: 1,
+                    justifyContent: 'center'
+                }}
+                resetScrollToCoords={{ x: 0, y: 0 }}
+                scrollEnabled={true}
+                enableOnAndroid={true}
+            >
+                <Text className="text-xl font-bold mb-5 text-center">회원가입</Text>
+                <TextInput
+                    className="border border-gray-300 p-2.5 rounded"
+                    placeholder="아이디 (4~40자)"
+                    value={userId}
+                    onChangeText={onChangeUserId}
+                    autoCapitalize="none"
+                    autoCorrect={false}
                 />
-            </View>
+                {errors.userId ? <Text className="text-red-500 mb-2">{errors.userId}</Text> : null}
+
+                <TextInput
+                    className="border border-gray-300 mt-2.5 p-2.5 rounded"
+                    placeholder="비밀번호 (4자 이상)"
+                    secureTextEntry
+                    value={password}
+                    onChangeText={onChangePassword}
+                />
+                <Text className="text-xs italic text-gray-600">아이폰 녹화 화면에는 비밀번호 입력이 보이지 않습니다.</Text>
+                <Text className="text-xs italic text-gray-600">입력한 비밀번호: {password}</Text>
+                {errors.password ? <Text className="text-red-500 mb-2">{errors.password}</Text> : null}
+
+                <TextInput
+                    className="border border-gray-300 mt-2.5 p-2.5 rounded"
+                    placeholder="이름"
+                    value={name}
+                    onChangeText={onChangeName}
+                />
+                {errors.name ? <Text className="text-red-500">{errors.name}</Text> : null}
+
+                <View className="mt-2.5">
+                    <CustomButton
+                        title={submitting ? "" : "회원가입"}
+                        onPress={handleSignUpBtn}
+                        addClass={"p-4"}
+                        bgColor={isFormValid && !submitting ? "bg-blue-500" : "bg-gray-300"}
+                        disabled={!isFormValid || submitting}
+                        RightIcon={submitting ? <ActivityIndicator /> : null}
+                    />
+                </View>
+            </KeyboardAwareScrollView>
         </View>
     );
 }

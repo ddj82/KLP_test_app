@@ -1,4 +1,4 @@
-import {RefreshControl, ScrollView, Text, View, Image, TextInput, ActivityIndicator, Alert} from "react-native";
+import {RefreshControl, Text, View, Image, TextInput, ActivityIndicator, Alert} from "react-native";
 import {router, useLocalSearchParams} from "expo-router";
 import {useCallback, useEffect, useState} from "react";
 import {BoardItem} from "@/types/board";
@@ -8,6 +8,7 @@ import {DEFAULT_THUMB} from "@/lib/api";
 import {useAuthStore} from "@/stores/authStore";
 import CustomButton from "@/components/CustomButton";
 import PagerView from "react-native-pager-view";
+import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 
 export default function BoardDetail() {
     const { id } = useLocalSearchParams<{ id?: string }>();
@@ -70,7 +71,7 @@ export default function BoardDetail() {
             const res = await addComment(Number(id), content);
 
             if (res.success) {
-                Alert.alert('성공', '댓글이 등록 되었습니다.', [
+                Alert.alert('성공', '댓글이 등록되었습니다.', [
                     { text: '확인', onPress: addCommentSuccess }
                 ]);
             } else {
@@ -109,10 +110,14 @@ export default function BoardDetail() {
     const imgs = board.imageUrls && board.imageUrls.length > 0 ? board.imageUrls : [];
 
     return (
-        <ScrollView
+        <KeyboardAwareScrollView
             className="flex-1 bg-white"
             contentContainerStyle={{ paddingBottom: 40 }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            resetScrollToCoords={{ x: 0, y: 0 }}
+            scrollEnabled={true}
+            enableOnAndroid={true}
+            extraHeight={75} // 댓글 입력창과 키보드 사이 여백
         >
             {/* 헤더 영역 */}
             <View className="px-5 pt-5">
@@ -172,15 +177,14 @@ export default function BoardDetail() {
 
             {/* 본문 */}
             <View className="px-5 pt-5 pb-10">
-                <Text className="text-base leading-6">{board.content}</Text>
+                <Text className="text-lg leading-6">{board.content}</Text>
             </View>
 
-            {/*<View className="w-full border-b border-gray-300" />*/}
 
             {/* 댓글 */}
             <View className="px-5 pt-5">
-                <View className="flex-row items-center gap-1">
-                    <Text className="text-xl font-bold mb-2">
+                <View className="flex-row items-center gap-1 mb-2">
+                    <Text className="text-xl font-bold items-center">
                         댓글
                     </Text>
                     {board.comments && (board.comments?.length > 0) && (
@@ -221,20 +225,20 @@ export default function BoardDetail() {
                     <View className="pt-2 gap-2">
                         {board.comments.map((c) => (
                             <View key={c.id} className="gap-1 border-b border-gray-300 pb-2">
-                                <Text className="">{c.content}</Text>
+                                <Text>{c.content}</Text>
                                 <View className="flex-row gap-2 justify-between">
-                                    <Text className="text-sm">{c.author?.userName ?? c.author?.userId}</Text>
-                                    <Text className="text-sm">{dayjs(c.createdAt).format("YYYY-MM-DD HH:mm")}</Text>
+                                    <Text className="text-sm text-gray-700">{c.author?.userName ?? c.author?.userId}</Text>
+                                    <Text className="text-sm text-gray-500">{dayjs(c.createdAt).format("YYYY-MM-DD HH:mm")}</Text>
                                 </View>
                             </View>
                         ))}
                     </View>
                 ) : (
-                    <View className="flex-1 bg-white justify-center items-center">
+                    <View className="flex-1 justify-center items-center">
                         <Text className="pt-10">댓글이 없습니다.</Text>
                     </View>
                 )}
             </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 };

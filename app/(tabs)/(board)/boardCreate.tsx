@@ -15,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import CustomButton from "@/components/CustomButton";
 import {boardCreate} from "@/lib/boardApi";
+import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 
 interface SelectedImage {
     uri: string; // content://이면 사전에 file://로 변환(캐시 복사) 또는 Blob 방식 사용
@@ -110,104 +111,107 @@ export default function BoardCreate() {
     };
 
     return (
-        <ScrollView className="flex-1 bg-white">
-            <View className="p-5">
-                <Text className="text-xl font-bold mb-5 text-center">글 추가</Text>
+        <KeyboardAwareScrollView
+            className="flex-1 bg-white p-5"
+            resetScrollToCoords={{ x: 0, y: 0 }}
+            scrollEnabled={true}
+            enableOnAndroid={true}
+        >
+            <Text className="text-xl font-bold mb-5 text-center">글 추가</Text>
 
-                {/* 제목 입력 */}
-                <View className="mb-4">
-                    <Text className="mb-2 font-medium">제목</Text>
-                    <TextInput
-                        className="border border-gray-300 p-3 rounded-lg"
-                        placeholder="제목을 입력하세요"
-                        value={title}
-                        onChangeText={setTitle}
-                    />
-                </View>
-
-                {/* 내용 입력 */}
-                <View className="mb-4">
-                    <Text className="mb-2 font-medium">내용</Text>
-                    <TextInput
-                        className="border border-gray-300 p-3 rounded-lg h-32"
-                        placeholder="내용을 입력하세요"
-                        value={content}
-                        onChangeText={setContent}
-                        multiline
-                        textAlignVertical="top"
-                    />
-                </View>
-
-                {/* 이미지 업로드 버튼 */}
-                <View className="mb-4">
-                    <Text className="mb-2 font-medium">첨부 이미지 ({selectedImages.length}/10)</Text>
-                    <TouchableOpacity
-                        className={`p-4 rounded-lg border-2 border-dashed flex-row justify-center items-center ${
-                            selectedImages.length >= 10 ? 'border-gray-300 bg-gray-100' : 'border-blue-300 bg-blue-50'
-                        }`}
-                        onPress={pickImages}
-                        disabled={selectedImages.length >= 10}
-                    >
-                        <FontAwesome
-                            name="camera"
-                            size={20}
-                            color={selectedImages.length >= 10 ? '#9CA3AF' : '#3B82F6'}
-                        />
-                        <Text className={`ml-2 font-medium ${
-                            selectedImages.length >= 10 ? 'text-gray-400' : 'text-blue-600'
-                        }`}>
-                            이미지 선택 (최대 10장)
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* 선택된 이미지 목록 */}
-                {selectedImages.length > 0 && (
-                    <View className="mb-4">
-                        <Text className="mb-3 font-medium">선택된 이미지</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            <View className="flex-row gap-3">
-                                {selectedImages.map((image, index) => (
-                                    <View key={index} className="relative">
-                                        <Image
-                                            source={{ uri: image.uri }}
-                                            className="w-24 h-24 rounded-lg"
-                                        />
-                                        <TouchableOpacity
-                                            className="absolute top-1 right-1 bg-red-500 w-5 h-5 rounded-full justify-center items-center"
-                                            onPress={() => removeImage(index)}
-                                        >
-                                            <FontAwesome name="times" size={10} color="white" />
-                                        </TouchableOpacity>
-                                        <Text className="text-xs text-gray-500 mt-1 text-center w-24" numberOfLines={1}>
-                                            {image.size ? `${(image.size / 1024).toFixed(0)}KB` : ''}
-                                        </Text>
-                                    </View>
-                                ))}
-                            </View>
-                        </ScrollView>
-                    </View>
-                )}
-
-                {/* 제출 버튼 */}
-                <View className="flex-row gap-2 mt-6">
-                    <CustomButton
-                        title={"취소"}
-                        onPress={() => router.back()}
-                        addClass={"flex-1 p-4"}
-                        bgColor={!submitting ? "bg-gray-500" : "bg-gray-300"}
-                        disabled={submitting}
-                    />
-                    <CustomButton
-                        title={"등록"}
-                        onPress={handleSubmit}
-                        addClass={"flex-1 p-4"}
-                        bgColor={!submitting ? "bg-blue-500" : "bg-gray-300"}
-                        disabled={submitting}
-                        RightIcon={submitting ? <ActivityIndicator /> : null}
-                    />
-                </View>
+            {/* 제목 입력 */}
+            <View className="mb-4">
+                <Text className="mb-2 font-medium">제목</Text>
+                <TextInput
+                    className="border border-gray-300 p-3 rounded-lg"
+                    placeholder="제목을 입력하세요"
+                    value={title}
+                    onChangeText={setTitle}
+                />
             </View>
-        </ScrollView>
+
+            {/* 내용 입력 */}
+            <View className="mb-4">
+                <Text className="mb-2 font-medium">내용</Text>
+                <TextInput
+                    className="border border-gray-300 p-3 rounded-lg h-48"
+                    placeholder="내용을 입력하세요"
+                    value={content}
+                    onChangeText={setContent}
+                    multiline
+                    textAlignVertical="top"
+                />
+            </View>
+
+            {/* 이미지 업로드 버튼 */}
+            <View className="mb-4">
+                <Text className="mb-2 font-medium">첨부 이미지 ({selectedImages.length}/10)</Text>
+                <TouchableOpacity
+                    className={`p-4 rounded-lg border-2 border-dashed flex-row justify-center items-center ${
+                        selectedImages.length >= 10 ? 'border-gray-300 bg-gray-100' : 'border-blue-300 bg-blue-50'
+                    }`}
+                    onPress={pickImages}
+                    disabled={selectedImages.length >= 10}
+                >
+                    <FontAwesome
+                        name="camera"
+                        size={20}
+                        color={selectedImages.length >= 10 ? '#9CA3AF' : '#3B82F6'}
+                    />
+                    <Text className={`ml-2 font-medium ${
+                        selectedImages.length >= 10 ? 'text-gray-400' : 'text-blue-600'
+                    }`}>
+                        이미지 선택 (최대 10장)
+                    </Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* 선택된 이미지 목록 */}
+            {selectedImages.length > 0 && (
+                <View className="mb-4">
+                    <Text className="mb-3 font-medium">선택된 이미지</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <View className="flex-row gap-3">
+                            {selectedImages.map((image, index) => (
+                                <View key={index} className="relative">
+                                    <Image
+                                        source={{ uri: image.uri }}
+                                        className="w-24 h-24 rounded-lg"
+                                    />
+                                    <TouchableOpacity
+                                        className="absolute top-1 right-1 bg-red-500 w-5 h-5 rounded-full justify-center items-center"
+                                        onPress={() => removeImage(index)}
+                                    >
+                                        <FontAwesome name="times" size={10} color="white" />
+                                    </TouchableOpacity>
+                                    <Text className="text-xs text-gray-500 mt-1 text-center w-24" numberOfLines={1}>
+                                        {image.size ? `${(image.size / 1024).toFixed(0)}KB` : ''}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+                    </ScrollView>
+                </View>
+            )}
+
+            {/* 제출 버튼 */}
+            <View className="flex-row gap-2 mt-6">
+                <CustomButton
+                    title={"취소"}
+                    onPress={() => router.back()}
+                    addClass={"flex-1 p-4"}
+                    bgColor={!submitting ? "bg-gray-500" : "bg-gray-300"}
+                    disabled={submitting}
+                />
+                <CustomButton
+                    title={"등록"}
+                    onPress={handleSubmit}
+                    addClass={"flex-1 p-4"}
+                    bgColor={!submitting ? "bg-blue-500" : "bg-gray-300"}
+                    disabled={submitting}
+                    RightIcon={submitting ? <ActivityIndicator /> : null}
+                />
+            </View>
+        </KeyboardAwareScrollView>
     );
 };

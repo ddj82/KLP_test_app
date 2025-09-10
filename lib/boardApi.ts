@@ -66,11 +66,12 @@ export const boardCreate = async (title: string, content: string, images: Select
                 formData.append('files', file);
             });
         }
-        console.log('formData',formData);
+
         const res = await api.post('/boards', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
             transformRequest: (data) => data,
         });
+
         return { success: true, data: res.data };
     } catch (e: any) {
         console.error('boardCreate API error:', e);

@@ -4,6 +4,7 @@ import {useMemo, useState} from "react";
 import {useAuthStore} from "@/stores/authStore";
 import CustomButton from "@/components/CustomButton"
 import {login} from "@/lib/authApi";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const USERID_MIN = 4;
 const USERID_MAX = 40;
@@ -82,42 +83,55 @@ export default function LoginScreen() {
     };
 
     return (
-        <View className="flex-1 bg-white justify-center p-5">
-            <Text className="text-xl font-bold mb-5 text-center">로그인</Text>
-            <TextInput
-                className="border border-gray-300 p-2.5 rounded"
-                placeholder="아이디"
-                value={userId}
-                onChangeText={onChangeUserId}
-            />
-            {errors.userId ? <Text className="text-red-500 mb-2">{errors.userId}</Text> : null}
+        <View className="flex-1 bg-white">
+            <KeyboardAwareScrollView
+                className="p-5"
+                contentContainerStyle={{
+                    flex: 1,
+                    justifyContent: 'center'
+                }}
+                resetScrollToCoords={{ x: 0, y: 0 }}
+                scrollEnabled={true}
+                enableOnAndroid={true}
+            >
+                <Text className="text-xl font-bold mb-5 text-center">로그인</Text>
+                <TextInput
+                    className="border border-gray-300 p-2.5 rounded"
+                    placeholder="아이디"
+                    value={userId}
+                    onChangeText={onChangeUserId}
+                />
+                {errors.userId ? <Text className="text-red-500 mb-2">{errors.userId}</Text> : null}
 
-            <TextInput
-                className="border border-gray-300 mt-2.5 p-2.5 rounded"
-                placeholder="비밀번호"
-                secureTextEntry
-                value={password}
-                onChangeText={onChangePassword}
-            />
-            {errors.password ? <Text className="text-red-500 mb-2">{errors.password}</Text> : null}
+                <TextInput
+                    className="border border-gray-300 mt-2.5 p-2.5 rounded"
+                    placeholder="비밀번호"
+                    secureTextEntry
+                    value={password}
+                    onChangeText={onChangePassword}
+                />
+                <Text className="text-xs italic text-gray-600">아이폰 녹화 화면에는 비밀번호 입력이 보이지 않습니다.</Text>
+                <Text className="text-xs italic text-gray-600">입력한 비밀번호: {password}</Text>
+                {errors.password ? <Text className="text-red-500 mb-2">{errors.password}</Text> : null}
 
-            <View className="flex-row items-center justify-center mt-2.5 mb-4">
-                <Text>계정이 없으신가요? </Text>
-                <Text
-                    className="text-blue-500"
-                    onPress={() => router.push('./register')}
-                >
-                    회원가입
-                </Text>
-            </View>
-            <CustomButton
-                title={"로그인"}
-                onPress={handleLoginBtn}
-                addClass={"p-4"}
-                bgColor={isFormValid && !submitting ? "bg-blue-500" : "bg-gray-300"}
-                disabled={!isFormValid || submitting}
-                RightIcon={submitting ? <ActivityIndicator /> : null}
-            />
+                <View className="flex-row items-center justify-center mt-2.5 mb-4">
+                    <Text>계정이 없으신가요? </Text>
+                    <Text
+                        className="text-blue-500"
+                        onPress={() => router.push('./register')}
+                    >
+                        회원가입
+                    </Text>
+                </View>
+                <CustomButton
+                    title={"로그인"}
+                    onPress={handleLoginBtn}
+                    addClass={"p-4"}
+                    bgColor={isFormValid && !submitting ? "bg-blue-500" : "bg-gray-300"}
+                    disabled={!isFormValid || submitting}
+                    RightIcon={submitting ? <ActivityIndicator /> : null}
+                />
+            </KeyboardAwareScrollView>
         </View>
     );
 };
