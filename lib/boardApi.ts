@@ -7,14 +7,16 @@ interface SelectedImage {
     size?: number; // 있으면 좋음(선택)
 }
 
-export const boardFindAll = async () => {
+export const boardFindAll = async (page: number, limit: number) => {
     try {
-        const res = await api.get('/boards');
+        const res = await api.get('/boards', {
+            params: { page, limit }
+        });
         const data = res.data;
         const items = (data.items ?? []).map((b: any) => {
             const attachments = normalizeAttachments(b.attachments);
             const imageUrls = attachments.map(toImageUrl);
-            return { ...b, attachments, imageUrls }; // ← 화면은 imageUrls만 쓰면 됨
+            return { ...b, attachments, imageUrls };
         });
 
         return { success: true, data: { items } };
@@ -75,6 +77,23 @@ export const boardCreate = async (title: string, content: string, images: Select
         return {
             success: false,
             error: e.response?.data?.message ?? '게시글 등록에 실패했습니다.'
+        };
+    }
+};
+
+export const addComment = async (id: number, content: string) => {
+    try {
+        const res = await api.post(`/boards/${id}/comments`, {
+            content: content,
+        });
+        const data = res.data;
+
+        return { success: true, data: data };
+    } catch (e: any) {
+        console.error('addComment API error:', e);
+        return {
+            success: false,
+            error: e.response?.data?.message ?? '댓글 등록에 실패했습니다.'
         };
     }
 };

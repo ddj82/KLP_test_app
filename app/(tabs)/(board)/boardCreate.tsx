@@ -199,7 +199,7 @@ export default function BoardCreate() {
                         disabled={submitting}
                     />
                     <CustomButton
-                        title={"작성 완료"}
+                        title={"등록"}
                         onPress={handleSubmit}
                         addClass={"flex-1 p-4"}
                         bgColor={!submitting ? "bg-blue-500" : "bg-gray-300"}

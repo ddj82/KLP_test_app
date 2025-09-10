@@ -16,30 +16,63 @@ export default function BoardList() {
     const { isLoggedIn } = useAuthStore();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
 
+    // 첫 페이지 로딩
     useEffect(() => {
-        const fetchBoards = async () => {
-            try {
+        fetchBoards(1, true);
+    }, []);
+
+    const fetchBoards = async (pageNum: number, isRefresh = false) => {
+        try {
+            if (isRefresh) {
                 setLoading(true);
                 setError(null);
-
-                const res = await boardFindAll();
-
-                if (res.success && res.data?.items) {
-                    setBoardList(res.data.items as BoardItem[]);
-                } else {
-                    setError(res.error ?? '게시글을 불러올 수 없습니다.');
-                }
-            } catch (e) {
-                console.error('게시글 로딩 에러:', e);
-                setError('예기치 못한 오류가 발생했습니다.');
-            } finally {
-                setLoading(false);
+            } else {
+                setLoadingMore(true);
             }
-        };
 
-        fetchBoards();
-    }, []);
+            const res = await boardFindAll(pageNum, 10);
+
+            if (res.success && res.data?.items) {
+                const newItems = res.data.items as BoardItem[];
+
+                if (isRefresh) {
+                    setBoardList(newItems);
+                } else {
+                    setBoardList(prev => [...prev, ...newItems]);
+                }
+
+                // 더 가져올 데이터가 있는지 확인
+                setHasMore(newItems.length === 10); // 10개 미만이면 마지막 페이지
+                setPage(pageNum);
+            } else {
+                setError(res.error ?? '게시글을 불러올 수 없습니다.');
+            }
+        } catch (e) {
+            console.error('게시글 로딩 에러:', e);
+            setError('예기치 못한 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+            setLoadingMore(false);
+        }
+    };
+
+    // 무한스크롤 로딩
+    const handleLoadMore = () => {
+        if (!loadingMore && hasMore) {
+            fetchBoards(page + 1, false);
+        }
+    };
+
+    // 새로고침
+    const handleRefresh = () => {
+        setPage(1);
+        setHasMore(true);
+        fetchBoards(1, true);
+    };
 
     const handleAddPress = () => {
         // 글 작성 페이지로 이동
@@ -74,17 +107,25 @@ export default function BoardList() {
                             resizeMode="cover"
                         />
                     )}
-                    <View className={"flex-row gap-1 justify-end px-1"}>
-                        <Text className={""}>{dayjs(b.createdAt).format("YYYY-MM-DD")}</Text>
+                    <View className={"flex-row gap-2 justify-between px-1"}>
+                        <Text>{b.author?.userName ?? b.author?.userId}</Text>
+                        <Text>{dayjs(b.createdAt).format("YYYY-MM-DD")}</Text>
                     </View>
-                    {/*<View className={"flex-row gap-2 justify-between px-1"}>*/}
-                    {/*    <Text className={""}>{b.author?.userName ?? b.author?.userId}</Text>*/}
-                    {/*    <Text className={""}>{dayjs(b.createdAt).format("YYYY-MM-DD")}</Text>*/}
-                    {/*</View>*/}
                 </View>
             </TouchableOpacity>
         );
     }
+
+    // 로딩 더 보기 컴포넌트
+    const renderFooter = () => {
+        if (!loadingMore) return null;
+
+        return (
+            <View className="py-4 justify-center items-center">
+                <Text className="text-gray-500">로딩 중...</Text>
+            </View>
+        );
+    };
 
     if (loading) {
         return (
@@ -109,14 +150,19 @@ export default function BoardList() {
     }
 
     return (
-        <View className="flex-1 bg-white py-5">
-            <Text className="text-xl font-bold mb-5 text-center">목록</Text>
+        <View className="flex-1 bg-white">
+            <Text className="text-xl font-bold my-5 text-center">목록</Text>
             <FlatList
                 data={boardList}
                 keyExtractor={(b) => String(b.id)}
                 renderItem={renderItem}
                 ListEmptyComponent={<Text className="justify-center">게시글이 없습니다.</Text>}
-                contentContainerStyle={{ paddingBottom: 40 }}
+                ListFooterComponent={renderFooter}
+                contentContainerStyle={{ paddingBottom: 80 }}
+                onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.1}
+                refreshing={loading}
+                onRefresh={handleRefresh}
             />
 
             <TouchableOpacity

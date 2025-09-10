@@ -1,10 +1,13 @@
-import {RefreshControl, ScrollView, Text, View, Image} from "react-native";
+import {RefreshControl, ScrollView, Text, View, Image, TextInput, ActivityIndicator, Alert} from "react-native";
 import {router, useLocalSearchParams} from "expo-router";
 import {useCallback, useEffect, useState} from "react";
 import {BoardItem} from "@/types/board";
-import {boardFindOne} from "@/lib/boardApi";
+import {addComment, boardFindOne} from "@/lib/boardApi";
 import dayjs from "dayjs";
 import {DEFAULT_THUMB} from "@/lib/api";
+import {useAuthStore} from "@/stores/authStore";
+import CustomButton from "@/components/CustomButton";
+import PagerView from "react-native-pager-view";
 
 export default function BoardDetail() {
     const { id } = useLocalSearchParams<{ id?: string }>();
@@ -12,6 +15,11 @@ export default function BoardDetail() {
     const [board, setBoard] = useState<BoardItem | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0);
+
+    const { isLoggedIn } = useAuthStore();
+    const [content, setContent] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     const load = useCallback(async () => {
         if (!id) {
@@ -24,9 +32,6 @@ export default function BoardDetail() {
             setError(null);
 
             const res = await boardFindOne(Number(id));
-
-            console.log('디테일',res);
-            console.log('디테일',Number(id));
 
             if (res.success && res.data) {
                 setBoard(res.data as BoardItem);
@@ -50,6 +55,39 @@ export default function BoardDetail() {
         await load();
         setRefreshing(false);
     }, [load]);
+
+    const handleAddComment = async () => {
+        if (!content.trim()) {
+            Alert.alert('알림', '내용을 입력해주세요.');
+            return;
+        }
+
+        try {
+            setSubmitting(true);
+
+            await new Promise((r) => setTimeout(r, 500));
+
+            const res = await addComment(Number(id), content);
+
+            if (res.success) {
+                Alert.alert('성공', '댓글이 등록 되었습니다.', [
+                    { text: '확인', onPress: addCommentSuccess }
+                ]);
+            } else {
+                Alert.alert('오류', res.error ?? '댓글 등록에 실패했습니다.');
+            }
+
+        } catch (e: any) {
+            Alert.alert('오류', e?.response?.data?.message ?? String(e));
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const addCommentSuccess = async () => {
+        setContent("");
+        await load();
+    };
 
     if (loading) {
         return (
@@ -92,32 +130,110 @@ export default function BoardDetail() {
             {/* 이미지 영역 */}
             <View className="px-5">
                 {imgs.length > 0 ? (
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
-                        {imgs.map((u, i) => (
-                            <Image
-                                key={`${u}-${i}`}
-                                source={{ uri: u }}
-                                className="w-[280px] h-[220px] rounded-xl mr-3"
-                                resizeMode="cover"
-                                onError={(e) => {
-                                    // 깨진 URL 대비: 로컬 기본 이미지로 교체하고 싶다면 별도 컴포넌트로 상태 처리
-                                    console.warn('image error', u, e.nativeEvent.error);
-                                }}
-                            />
-                        ))}
-                    </ScrollView>
+                    <View>
+                        <PagerView
+                            style={{ height: 280 }}
+                            initialPage={0}
+                            onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
+                        >
+                            {imgs.map((item, index) => (
+                                <View key={`${item}-${index}`}>
+                                    <Image
+                                        source={{ uri: item }}
+                                        className="w-full h-full rounded-xl"
+                                        resizeMode="cover"
+                                        onError={(e) => {
+                                            console.warn('image error', item, e.nativeEvent.error);
+                                        }}
+                                    />
+                                </View>
+                            ))}
+                        </PagerView>
+                        {/* 페이지 인디케이터 */}
+                        <View className="flex-row justify-center mt-2">
+                            {imgs.map((_, index) => (
+                                <View
+                                    key={index}
+                                    className={`w-2 h-2 rounded-full mx-1 ${
+                                        index === currentPage ? 'bg-blue-500' : 'bg-gray-300'
+                                    }`}
+                                />
+                            ))}
+                        </View>
+                    </View>
                 ) : (
                     <Image
                         source={DEFAULT_THUMB}
-                        className="w-full h-[220px] rounded-xl mb-3"
+                        className="w-full h-[280px] rounded-xl mb-3"
                         resizeMode="cover"
                     />
                 )}
             </View>
 
             {/* 본문 */}
-            <View className="px-5">
+            <View className="px-5 pt-5 pb-10">
                 <Text className="text-base leading-6">{board.content}</Text>
+            </View>
+
+            {/*<View className="w-full border-b border-gray-300" />*/}
+
+            {/* 댓글 */}
+            <View className="px-5 pt-5">
+                <View className="flex-row items-center gap-1">
+                    <Text className="text-xl font-bold mb-2">
+                        댓글
+                    </Text>
+                    {board.comments && (board.comments?.length > 0) && (
+                        <Text className="text-base font-normal">{board.comments?.length}</Text>
+                    )}
+                </View>
+
+                {/* 내용 입력 */}
+                <View className="pt-1">
+                    <TextInput
+                        className={`border p-3 rounded-lg h-24 mb-2 ${
+                            isLoggedIn
+                                ? 'border-gray-300 bg-white'
+                                : 'border-gray-200 bg-gray-50 text-gray-400'
+                        }`}
+                        placeholder={isLoggedIn ? "댓글을 입력하세요" : "로그인이 필요합니다"}
+                        value={content}
+                        onChangeText={setContent}
+                        multiline
+                        textAlignVertical="top"
+                        editable={isLoggedIn}
+                    />
+                    {content !== "" && (
+                        <View className="flex-1 items-end">
+                            <CustomButton
+                                title={"작성"}
+                                onPress={handleAddComment}
+                                addClass={"p-2 px-4 mb-2"}
+                                bgColor={!submitting ? "bg-blue-500" : "bg-gray-300"}
+                                disabled={submitting}
+                                RightIcon={submitting ? <ActivityIndicator /> : null}
+                            />
+                        </View>
+                    )}
+                </View>
+
+                {board.comments && (board.comments?.length > 0) ? (
+                    <View className="pt-2 gap-2">
+                        {board.comments.map((c) => (
+                            <View key={c.id} className="gap-1 border-b border-gray-300 pb-2">
+                                <Text className="">{c.content}</Text>
+                                <View className="flex-row gap-2 justify-between">
+                                    <Text className="text-sm">{c.author?.userName ?? c.author?.userId}</Text>
+                                    <Text className="text-sm">{dayjs(c.createdAt).format("YYYY-MM-DD HH:mm")}</Text>
+                                </View>
+                            </View>
+                        ))}
+                    </View>
+                ) : (
+                    <View className="flex-1 bg-white justify-center items-center">
+                        <Text className="pt-10">댓글이 없습니다.</Text>
+                    </View>
+                )}
             </View>
         </ScrollView>
     );

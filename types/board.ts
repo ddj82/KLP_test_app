@@ -12,4 +12,14 @@ export interface BoardItem {
     imageUrls?: string[] | null;
     createdAt: string;
     author: AuthorLite | null;
+    comments: CommentItem[] | null;
+}
+
+export interface CommentItem {
+    id: number;
+    content: string;
+    attachments: string[] | null;
+    imageUrls?: string[] | null;
+    createdAt: string;
+    author: AuthorLite | null;
 }
