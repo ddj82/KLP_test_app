@@ -125,3 +125,5 @@ export const useStore = create<AppState>((set) => ({
 - `tsconfig.json`: TypeScript 컴파일러 설정
 - `metro.config.js`: Metro 번들러 설정
 
+---
+**연관 프로젝트**: [TestAppAPI Backend](https://github.com/ddj82/KLP_test_app_api)
