@@ -1,20 +1,14 @@
 import {View, Text, ActivityIndicator} from "react-native";
 import {useAuthStore} from "@/stores/authStore";
-import {useRouter} from "expo-router";
+import {router} from "expo-router";
 import CustomButton from "@/components/CustomButton";
 import {useEffect, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-interface UserInfoProps {
-    id: number;
-    userId: string;
-    name: string;
-}
+import {User} from "@/types/profile";
 
 export default function ProfileScreen() {
-    const router = useRouter();
     const { handleLogout } = useAuthStore();
-    const [user, setUser] = useState<UserInfoProps | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
@@ -23,7 +17,7 @@ export default function ProfileScreen() {
             try {
                 const userStored = await AsyncStorage.getItem("user");
                 if (userStored) {
-                    const userParsed: UserInfoProps = JSON.parse(userStored);
+                    const userParsed: User = JSON.parse(userStored);
                     setUser(userParsed);
                 }
             } catch (e) {
@@ -56,6 +50,7 @@ export default function ProfileScreen() {
             <CustomButton
                 title={"로그아웃"}
                 onPress={handleLogoutBtn}
+                addClass={"p-4"}
                 bgColor={!submitting ? "bg-blue-500" : "bg-gray-300"}
                 disabled={submitting}
                 RightIcon={submitting ? <ActivityIndicator /> : null}

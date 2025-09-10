@@ -5,21 +5,22 @@ interface CustomButtonProps {
     title: string;
     onPress: () => void;
     bgColor: string;
+    addClass?: string;
     disabled?: boolean;
     RightIcon?: React.ReactNode;
 }
 
-const CustomButton = ({ title, onPress, bgColor, disabled = false, RightIcon, }: CustomButtonProps) => {
+const CustomButton = ({ title, onPress, bgColor, addClass, disabled = false, RightIcon, }: CustomButtonProps) => {
     const [isPressed, setIsPressed] = useState(false);
 
     return (
         <TouchableOpacity
             className={`
-                py-3 px-6 
                 rounded-lg 
                 items-center 
                 justify-center
                 shadow-lg
+                ${addClass}
                 ${bgColor}
                 ${disabled ? 'opacity-60' : ''}
             `}

@@ -1,5 +1,5 @@
 import {View, Text, TextInput, Alert, ActivityIndicator} from 'react-native';
-import {useRouter} from "expo-router";
+import {router} from "expo-router";
 import {useMemo, useState} from "react";
 import {useAuthStore} from "@/stores/authStore";
 import CustomButton from "@/components/CustomButton"
@@ -15,7 +15,6 @@ type Errors = {
 };
 
 export default function LoginScreen() {
-    const router = useRouter();
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
     const { handleLogin } = useAuthStore();
@@ -114,6 +113,7 @@ export default function LoginScreen() {
             <CustomButton
                 title={"로그인"}
                 onPress={handleLoginBtn}
+                addClass={"p-4"}
                 bgColor={isFormValid && !submitting ? "bg-blue-500" : "bg-gray-300"}
                 disabled={!isFormValid || submitting}
                 RightIcon={submitting ? <ActivityIndicator /> : null}

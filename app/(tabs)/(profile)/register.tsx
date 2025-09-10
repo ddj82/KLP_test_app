@@ -1,5 +1,5 @@
 import {View, Text, TextInput, Alert, ActivityIndicator} from "react-native";
-import {useRouter} from "expo-router";
+import {router} from "expo-router";
 import {useMemo, useState} from "react";
 import CustomButton from "@/components/CustomButton";
 import {signUp} from "@/lib/authApi";
@@ -16,7 +16,6 @@ type Errors = {
 };
 
 export default function RegisterScreen() {
-    const router = useRouter();
     const [userId, setUserId] = useState('');
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
@@ -89,6 +88,7 @@ export default function RegisterScreen() {
             Alert.alert("회원가입 완료", "로그인 화면으로 이동합니다.");
             router.replace('/login');
         } catch (e: any) {
+            console.log("error", e);
             Alert.alert("회원가입 실패", e?.response?.data?.message ?? String(e));
         } finally {
             setSubmitting(false);
@@ -97,7 +97,7 @@ export default function RegisterScreen() {
 
     return (
         <View className="flex-1 bg-white justify-center p-5">
-            <Text className="text-xl font-bold mb-5 text-center">회원가입 화면</Text>
+            <Text className="text-xl font-bold mb-5 text-center">회원가입</Text>
             <TextInput
                 className="border border-gray-300 p-2.5 rounded"
                 placeholder="아이디 (4~40자)"
@@ -129,6 +129,7 @@ export default function RegisterScreen() {
                 <CustomButton
                     title={submitting ? "" : "회원가입"}
                     onPress={handleSignUpBtn}
+                    addClass={"p-4"}
                     bgColor={isFormValid && !submitting ? "bg-blue-500" : "bg-gray-300"}
                     disabled={!isFormValid || submitting}
                     RightIcon={submitting ? <ActivityIndicator /> : null}
