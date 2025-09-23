@@ -5,7 +5,11 @@
     "extra": {
       "API_BASE_URL_IOS_SIM": "http://localhost:7979/api",
       "API_BASE_URL_ANDROID_EMU": "http://10.0.2.2:7979/api",
-      "API_BASE_URL_LAN": "http://192.168.0.49:7979/api"
+      "API_BASE_URL_LAN": "http://3.35.249.20:7979/api",
+      "router": {},
+      "eas": {
+        "projectId": "80760692-57f1-46ee-a431-4dd81533d1fd"
+      }
     },
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,9 +23,18 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "icon": "./assets/images/icon.png",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ddj82.testApp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
+      "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -38,6 +51,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/80760692-57f1-46ee-a431-4dd81533d1fd"
     }
   }
 }

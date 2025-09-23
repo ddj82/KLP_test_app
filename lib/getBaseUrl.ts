@@ -1,9 +1,15 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import * as Updates from 'expo-updates';
 import { Platform } from 'react-native';
 
+function getExtra() {
+    return (Constants.expoConfig?.extra ?? (Updates.manifest as any)?.extra ?? {});
+}
+
 export function getBaseUrl() {
-    const extra = Constants.expoConfig?.extra as any;
+    // const extra = Constants.expoConfig?.extra as any;
+    const extra = getExtra();
 
     if (Platform.OS === 'ios') {
         // 실기기: LAN IP 사용 / 시뮬레이터: localhost 사용
