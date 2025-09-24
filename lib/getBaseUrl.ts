@@ -4,7 +4,7 @@ import * as Updates from 'expo-updates';
 import { Platform } from 'react-native';
 
 function getExtra() {
-    return (Constants.expoConfig?.extra ?? (Updates.manifest as any)?.extra ?? {});
+    return (Constants.expoConfig?.extra ?? (Updates.manifest as any)?.extra ?? {}) as any;
 }
 
 export function getBaseUrl() {
